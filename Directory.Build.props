@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <!-- Common build settings -->
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Version -->
+    <Version>0.0.1</Version>
+
+    <!-- Target framework -->
+    <TargetFramework>net10.0</TargetFramework>
+
+    <!-- Centralize build outputs in artifacts/ directory -->
+    <BaseOutputPath>$(MSBuildThisFileDirectory)artifacts\bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)artifacts\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+</Project>
