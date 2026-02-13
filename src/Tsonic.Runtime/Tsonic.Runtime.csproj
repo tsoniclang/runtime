@@ -5,6 +5,7 @@
     <PackageId>Tsonic.Runtime</PackageId>
     <Authors>Tsonic Project</Authors>
     <Description>TypeScript language runtime primitives for Tsonic compiler - provides Union types, structural typing, and other TS language features in C#</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/tsoniclang/runtime</PackageProjectUrl>
     <RepositoryUrl>https://github.com/tsoniclang/runtime.git</RepositoryUrl>
@@ -15,5 +16,9 @@
     <IsAotCompatible>true</IsAotCompatible>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 
 </Project>
