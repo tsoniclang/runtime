@@ -7,7 +7,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <!-- Version -->
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
 
     <!-- Target framework -->
     <TargetFramework>net10.0</TargetFramework>
