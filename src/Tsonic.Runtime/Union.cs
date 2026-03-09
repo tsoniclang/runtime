@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 
 namespace Tsonic.Runtime
 {
@@ -136,6 +137,28 @@ namespace Tsonic.Runtime
         {
             return HashCode.Combine(_value, _index);
         }
+
+        public static bool operator ==(Union<T1, T2>? left, T1 right)
+        {
+            return left is not null && left._index == 0 && EqualityComparer<T1>.Default.Equals(left.As1(), right);
+        }
+
+        public static bool operator !=(Union<T1, T2>? left, T1 right) => !(left == right);
+
+        public static bool operator ==(T1 left, Union<T1, T2>? right) => right == left;
+
+        public static bool operator !=(T1 left, Union<T1, T2>? right) => !(left == right);
+
+        public static bool operator ==(Union<T1, T2>? left, T2 right)
+        {
+            return left is not null && left._index == 1 && EqualityComparer<T2>.Default.Equals(left.As2(), right);
+        }
+
+        public static bool operator !=(Union<T1, T2>? left, T2 right) => !(left == right);
+
+        public static bool operator ==(T2 left, Union<T1, T2>? right) => right == left;
+
+        public static bool operator !=(T2 left, Union<T1, T2>? right) => !(left == right);
     }
 
     /// <summary>
@@ -252,6 +275,39 @@ namespace Tsonic.Runtime
         }
 
         public override int GetHashCode() => HashCode.Combine(_value, _index);
+
+        public static bool operator ==(Union<T1, T2, T3>? left, T1 right)
+        {
+            return left is not null && left._index == 0 && EqualityComparer<T1>.Default.Equals(left.As1(), right);
+        }
+
+        public static bool operator !=(Union<T1, T2, T3>? left, T1 right) => !(left == right);
+
+        public static bool operator ==(T1 left, Union<T1, T2, T3>? right) => right == left;
+
+        public static bool operator !=(T1 left, Union<T1, T2, T3>? right) => !(left == right);
+
+        public static bool operator ==(Union<T1, T2, T3>? left, T2 right)
+        {
+            return left is not null && left._index == 1 && EqualityComparer<T2>.Default.Equals(left.As2(), right);
+        }
+
+        public static bool operator !=(Union<T1, T2, T3>? left, T2 right) => !(left == right);
+
+        public static bool operator ==(T2 left, Union<T1, T2, T3>? right) => right == left;
+
+        public static bool operator !=(T2 left, Union<T1, T2, T3>? right) => !(left == right);
+
+        public static bool operator ==(Union<T1, T2, T3>? left, T3 right)
+        {
+            return left is not null && left._index == 2 && EqualityComparer<T3>.Default.Equals(left.As3(), right);
+        }
+
+        public static bool operator !=(Union<T1, T2, T3>? left, T3 right) => !(left == right);
+
+        public static bool operator ==(T3 left, Union<T1, T2, T3>? right) => right == left;
+
+        public static bool operator !=(T3 left, Union<T1, T2, T3>? right) => !(left == right);
     }
 
     /// <summary>
@@ -300,6 +356,23 @@ namespace Tsonic.Runtime
         public override string? ToString() => _value?.ToString();
         public override bool Equals(object? obj) => obj is Union<T1, T2, T3, T4> other && _index == other._index && Equals(_value, other._value);
         public override int GetHashCode() => HashCode.Combine(_value, _index);
+
+        public static bool operator ==(Union<T1, T2, T3, T4>? left, T1 right) => left is not null && left._index == 0 && EqualityComparer<T1>.Default.Equals(left.As1(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4>? left, T1 right) => !(left == right);
+        public static bool operator ==(T1 left, Union<T1, T2, T3, T4>? right) => right == left;
+        public static bool operator !=(T1 left, Union<T1, T2, T3, T4>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4>? left, T2 right) => left is not null && left._index == 1 && EqualityComparer<T2>.Default.Equals(left.As2(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4>? left, T2 right) => !(left == right);
+        public static bool operator ==(T2 left, Union<T1, T2, T3, T4>? right) => right == left;
+        public static bool operator !=(T2 left, Union<T1, T2, T3, T4>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4>? left, T3 right) => left is not null && left._index == 2 && EqualityComparer<T3>.Default.Equals(left.As3(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4>? left, T3 right) => !(left == right);
+        public static bool operator ==(T3 left, Union<T1, T2, T3, T4>? right) => right == left;
+        public static bool operator !=(T3 left, Union<T1, T2, T3, T4>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4>? left, T4 right) => left is not null && left._index == 3 && EqualityComparer<T4>.Default.Equals(left.As4(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4>? left, T4 right) => !(left == right);
+        public static bool operator ==(T4 left, Union<T1, T2, T3, T4>? right) => right == left;
+        public static bool operator !=(T4 left, Union<T1, T2, T3, T4>? right) => !(left == right);
     }
 
     /// <summary>
@@ -353,6 +426,27 @@ namespace Tsonic.Runtime
         public override string? ToString() => _value?.ToString();
         public override bool Equals(object? obj) => obj is Union<T1, T2, T3, T4, T5> other && _index == other._index && Equals(_value, other._value);
         public override int GetHashCode() => HashCode.Combine(_value, _index);
+
+        public static bool operator ==(Union<T1, T2, T3, T4, T5>? left, T1 right) => left is not null && left._index == 0 && EqualityComparer<T1>.Default.Equals(left.As1(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5>? left, T1 right) => !(left == right);
+        public static bool operator ==(T1 left, Union<T1, T2, T3, T4, T5>? right) => right == left;
+        public static bool operator !=(T1 left, Union<T1, T2, T3, T4, T5>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5>? left, T2 right) => left is not null && left._index == 1 && EqualityComparer<T2>.Default.Equals(left.As2(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5>? left, T2 right) => !(left == right);
+        public static bool operator ==(T2 left, Union<T1, T2, T3, T4, T5>? right) => right == left;
+        public static bool operator !=(T2 left, Union<T1, T2, T3, T4, T5>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5>? left, T3 right) => left is not null && left._index == 2 && EqualityComparer<T3>.Default.Equals(left.As3(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5>? left, T3 right) => !(left == right);
+        public static bool operator ==(T3 left, Union<T1, T2, T3, T4, T5>? right) => right == left;
+        public static bool operator !=(T3 left, Union<T1, T2, T3, T4, T5>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5>? left, T4 right) => left is not null && left._index == 3 && EqualityComparer<T4>.Default.Equals(left.As4(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5>? left, T4 right) => !(left == right);
+        public static bool operator ==(T4 left, Union<T1, T2, T3, T4, T5>? right) => right == left;
+        public static bool operator !=(T4 left, Union<T1, T2, T3, T4, T5>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5>? left, T5 right) => left is not null && left._index == 4 && EqualityComparer<T5>.Default.Equals(left.As5(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5>? left, T5 right) => !(left == right);
+        public static bool operator ==(T5 left, Union<T1, T2, T3, T4, T5>? right) => right == left;
+        public static bool operator !=(T5 left, Union<T1, T2, T3, T4, T5>? right) => !(left == right);
     }
 
     /// <summary>
@@ -411,6 +505,31 @@ namespace Tsonic.Runtime
         public override string? ToString() => _value?.ToString();
         public override bool Equals(object? obj) => obj is Union<T1, T2, T3, T4, T5, T6> other && _index == other._index && Equals(_value, other._value);
         public override int GetHashCode() => HashCode.Combine(_value, _index);
+
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6>? left, T1 right) => left is not null && left._index == 0 && EqualityComparer<T1>.Default.Equals(left.As1(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6>? left, T1 right) => !(left == right);
+        public static bool operator ==(T1 left, Union<T1, T2, T3, T4, T5, T6>? right) => right == left;
+        public static bool operator !=(T1 left, Union<T1, T2, T3, T4, T5, T6>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6>? left, T2 right) => left is not null && left._index == 1 && EqualityComparer<T2>.Default.Equals(left.As2(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6>? left, T2 right) => !(left == right);
+        public static bool operator ==(T2 left, Union<T1, T2, T3, T4, T5, T6>? right) => right == left;
+        public static bool operator !=(T2 left, Union<T1, T2, T3, T4, T5, T6>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6>? left, T3 right) => left is not null && left._index == 2 && EqualityComparer<T3>.Default.Equals(left.As3(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6>? left, T3 right) => !(left == right);
+        public static bool operator ==(T3 left, Union<T1, T2, T3, T4, T5, T6>? right) => right == left;
+        public static bool operator !=(T3 left, Union<T1, T2, T3, T4, T5, T6>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6>? left, T4 right) => left is not null && left._index == 3 && EqualityComparer<T4>.Default.Equals(left.As4(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6>? left, T4 right) => !(left == right);
+        public static bool operator ==(T4 left, Union<T1, T2, T3, T4, T5, T6>? right) => right == left;
+        public static bool operator !=(T4 left, Union<T1, T2, T3, T4, T5, T6>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6>? left, T5 right) => left is not null && left._index == 4 && EqualityComparer<T5>.Default.Equals(left.As5(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6>? left, T5 right) => !(left == right);
+        public static bool operator ==(T5 left, Union<T1, T2, T3, T4, T5, T6>? right) => right == left;
+        public static bool operator !=(T5 left, Union<T1, T2, T3, T4, T5, T6>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6>? left, T6 right) => left is not null && left._index == 5 && EqualityComparer<T6>.Default.Equals(left.As6(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6>? left, T6 right) => !(left == right);
+        public static bool operator ==(T6 left, Union<T1, T2, T3, T4, T5, T6>? right) => right == left;
+        public static bool operator !=(T6 left, Union<T1, T2, T3, T4, T5, T6>? right) => !(left == right);
     }
 
     /// <summary>
@@ -474,6 +593,35 @@ namespace Tsonic.Runtime
         public override string? ToString() => _value?.ToString();
         public override bool Equals(object? obj) => obj is Union<T1, T2, T3, T4, T5, T6, T7> other && _index == other._index && Equals(_value, other._value);
         public override int GetHashCode() => HashCode.Combine(_value, _index);
+
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7>? left, T1 right) => left is not null && left._index == 0 && EqualityComparer<T1>.Default.Equals(left.As1(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7>? left, T1 right) => !(left == right);
+        public static bool operator ==(T1 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => right == left;
+        public static bool operator !=(T1 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7>? left, T2 right) => left is not null && left._index == 1 && EqualityComparer<T2>.Default.Equals(left.As2(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7>? left, T2 right) => !(left == right);
+        public static bool operator ==(T2 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => right == left;
+        public static bool operator !=(T2 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7>? left, T3 right) => left is not null && left._index == 2 && EqualityComparer<T3>.Default.Equals(left.As3(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7>? left, T3 right) => !(left == right);
+        public static bool operator ==(T3 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => right == left;
+        public static bool operator !=(T3 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7>? left, T4 right) => left is not null && left._index == 3 && EqualityComparer<T4>.Default.Equals(left.As4(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7>? left, T4 right) => !(left == right);
+        public static bool operator ==(T4 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => right == left;
+        public static bool operator !=(T4 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7>? left, T5 right) => left is not null && left._index == 4 && EqualityComparer<T5>.Default.Equals(left.As5(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7>? left, T5 right) => !(left == right);
+        public static bool operator ==(T5 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => right == left;
+        public static bool operator !=(T5 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7>? left, T6 right) => left is not null && left._index == 5 && EqualityComparer<T6>.Default.Equals(left.As6(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7>? left, T6 right) => !(left == right);
+        public static bool operator ==(T6 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => right == left;
+        public static bool operator !=(T6 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7>? left, T7 right) => left is not null && left._index == 6 && EqualityComparer<T7>.Default.Equals(left.As7(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7>? left, T7 right) => !(left == right);
+        public static bool operator ==(T7 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => right == left;
+        public static bool operator !=(T7 left, Union<T1, T2, T3, T4, T5, T6, T7>? right) => !(left == right);
     }
 
     /// <summary>
@@ -542,5 +690,38 @@ namespace Tsonic.Runtime
         public override string? ToString() => _value?.ToString();
         public override bool Equals(object? obj) => obj is Union<T1, T2, T3, T4, T5, T6, T7, T8> other && _index == other._index && Equals(_value, other._value);
         public override int GetHashCode() => HashCode.Combine(_value, _index);
+
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T1 right) => left is not null && left._index == 0 && EqualityComparer<T1>.Default.Equals(left.As1(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T1 right) => !(left == right);
+        public static bool operator ==(T1 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => right == left;
+        public static bool operator !=(T1 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T2 right) => left is not null && left._index == 1 && EqualityComparer<T2>.Default.Equals(left.As2(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T2 right) => !(left == right);
+        public static bool operator ==(T2 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => right == left;
+        public static bool operator !=(T2 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T3 right) => left is not null && left._index == 2 && EqualityComparer<T3>.Default.Equals(left.As3(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T3 right) => !(left == right);
+        public static bool operator ==(T3 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => right == left;
+        public static bool operator !=(T3 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T4 right) => left is not null && left._index == 3 && EqualityComparer<T4>.Default.Equals(left.As4(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T4 right) => !(left == right);
+        public static bool operator ==(T4 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => right == left;
+        public static bool operator !=(T4 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T5 right) => left is not null && left._index == 4 && EqualityComparer<T5>.Default.Equals(left.As5(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T5 right) => !(left == right);
+        public static bool operator ==(T5 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => right == left;
+        public static bool operator !=(T5 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T6 right) => left is not null && left._index == 5 && EqualityComparer<T6>.Default.Equals(left.As6(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T6 right) => !(left == right);
+        public static bool operator ==(T6 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => right == left;
+        public static bool operator !=(T6 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T7 right) => left is not null && left._index == 6 && EqualityComparer<T7>.Default.Equals(left.As7(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T7 right) => !(left == right);
+        public static bool operator ==(T7 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => right == left;
+        public static bool operator !=(T7 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => !(left == right);
+        public static bool operator ==(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T8 right) => left is not null && left._index == 7 && EqualityComparer<T8>.Default.Equals(left.As8(), right);
+        public static bool operator !=(Union<T1, T2, T3, T4, T5, T6, T7, T8>? left, T8 right) => !(left == right);
+        public static bool operator ==(T8 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => right == left;
+        public static bool operator !=(T8 left, Union<T1, T2, T3, T4, T5, T6, T7, T8>? right) => !(left == right);
     }
 }
