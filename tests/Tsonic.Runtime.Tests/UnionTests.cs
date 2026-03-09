@@ -99,6 +99,29 @@ namespace Tsonic.Runtime.Tests
         }
 
         [Fact]
+        public void Union2_EqualityOperators_CompareActiveVariantAgainstLiteral()
+        {
+            Union<int, string> intUnion = 42;
+            Union<int, string> stringUnion = "hello";
+
+            Assert.True(intUnion == 42);
+            Assert.True(42 == intUnion);
+            Assert.True(intUnion != 7);
+            Assert.True(stringUnion == "hello");
+            Assert.True("hello" == stringUnion);
+            Assert.True(stringUnion != "goodbye");
+        }
+
+        [Fact]
+        public void Union2_EqualityOperators_DoNotMatchInactiveVariant()
+        {
+            Union<int, string> union = "hello";
+
+            Assert.False(union == 42);
+            Assert.True(union != 42);
+        }
+
+        [Fact]
         public void Union3_SupportsThreeTypes()
         {
             Union<int, string, bool> union1 = 42;
