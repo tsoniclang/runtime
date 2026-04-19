@@ -13,14 +13,14 @@ Tsonic.Runtime contains mode-independent TypeScript language primitives that are
 
 ## When to Use
 
-This library is referenced by **all** Tsonic projects, regardless of mode:
+This library is referenced by **all** Tsonic projects.
 
-- `mode = "dotnet"` (default) - Uses only `Tsonic.Runtime`
-- `mode = "js"` - Uses both `Tsonic.Runtime` and `Tsonic.JSRuntime`
+- CLR/default-surface projects use `Tsonic.Runtime`
+- First-party source surfaces such as `@tsonic/js`, `@tsonic/nodejs`, and `@tsonic/express` also use `Tsonic.Runtime`
 
 ## What's NOT Here
 
-JavaScript built-in semantics are in a separate package (`Tsonic.JSRuntime`):
+JavaScript and Node surface behavior is authored in first-party TypeScript source packages, not in separate CLR runtime packages:
 - Array methods (push, pop, map, filter, etc.)
 - String methods (toUpperCase, slice, includes, etc.)
 - Math, console, JSON, global functions
