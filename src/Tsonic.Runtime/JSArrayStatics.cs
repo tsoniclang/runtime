@@ -5,18 +5,6 @@ namespace Tsonic.Runtime;
 
 public static class JSArrayStatics
 {
-    public static bool isArray(object? value)
-    {
-        if (value is Array)
-        {
-            return true;
-        }
-
-        var type = value?.GetType();
-        return type?.IsGenericType == true &&
-               type.GetGenericTypeDefinition() == typeof(JSArray<>);
-    }
-
     public static T[] from<T>(IEnumerable<T> iterable)
     {
         return JSArray<T>.from(iterable).toArray();

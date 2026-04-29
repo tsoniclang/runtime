@@ -813,17 +813,6 @@ public class JSArray<T> : IEnumerable<T>
         return result;
     }
 
-    public static bool isArray(object? value)
-    {
-        if (value == null)
-        {
-            return false;
-        }
-
-        var type = value.GetType();
-        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(JSArray<>);
-    }
-
     public static JSArray<T> from(IEnumerable<T> iterable)
     {
         return new JSArray<T>(iterable);
