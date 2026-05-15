@@ -20,15 +20,9 @@ public static class JSON
             return (T)(object?)result!;
         }
 
-        if (result is DynamicObject dynObj)
+        if (result is Dictionary<string, object?> dict)
         {
-            var tempDict = new Dictionary<string, object?>();
-            foreach (var key in dynObj.GetKeys())
-            {
-                tempDict[key] = dynObj[key];
-            }
-
-            return Structural.CloneFromDictionary<T>(tempDict)!;
+            return Structural.CloneFromDictionary<T>(dict)!;
         }
 
         return (T)(object?)result!;
@@ -62,7 +56,7 @@ public static class JSON
 
     private static object ConvertJsonObject(JsonElement element)
     {
-        var obj = new DynamicObject();
+        var obj = new Dictionary<string, object?>();
         foreach (var prop in element.EnumerateObject())
         {
             obj[prop.Name] = ConvertJsonElement(prop.Value);
