@@ -1,15 +1,24 @@
 # Tsonic.Runtime
 
-TypeScript language runtime primitives for the Tsonic compiler - provides Union types, structural typing, and other TypeScript language features in C#.
+TypeScript language runtime primitives for the Tsonic compiler.
 
 ## Overview
 
-Tsonic.Runtime contains mode-independent TypeScript language primitives that are used in **all** Tsonic compilation modes. This library provides:
+Tsonic.Runtime contains mode-independent primitives used by Tsonic-generated C#
+in CLR, JavaScript-surface, Node-style, and ASP.NET Core projects.
 
-- **Union Types** - `Union<T1, T2, ...>` for TypeScript unions like `string | number`
-- **Structural Typing** - `Structural.Clone<T>()` and `DictionaryAdapter<T>` for duck typing
-- **Dynamic Objects** - `DynamicObject` for TypeScript's `keyof` and indexed access patterns
-- **Operators** - `typeof` and `instanceof` operator support
+The runtime provides:
+
+- **Union carriers** - `Union<T1, T2, ...>` for TypeScript unions like
+  `string | number`
+- **Structural carriers** - `Structural.Clone<T>()`,
+  `Structural.CloneFromDictionary<T>()`, and `DictionaryAdapter<T>` for closed
+  generated structural conversion
+- **Dynamic object carrier** - `DynamicObject` for compiler-owned indexed
+  access and dictionary-shaped projections
+- **Operator helpers** - deterministic `typeof` and `instanceof` support
+- **JSON helpers** - `JSON.parse<T>()` and `JSON.stringify(...)` for generated
+  code paths that use closed structural metadata
 
 ## When to Use
 
@@ -23,7 +32,12 @@ This library is referenced by **all** Tsonic projects.
 JavaScript and Node surface behavior is authored in first-party TypeScript source packages, not in separate CLR runtime packages:
 - Array methods (push, pop, map, filter, etc.)
 - String methods (toUpperCase, slice, includes, etc.)
-- Math, console, JSON, global functions
+- Math, console, JS-surface `JSON`, and other global functions
+
+`Tsonic.Runtime` owns the compiler runtime carriers. It does not define the
+user-facing `@tsonic/js` or `@tsonic/nodejs` API surface. The public JS and Node
+APIs live in their first-party source packages and compile down to deterministic
+runtime calls where needed.
 
 ## Building
 
