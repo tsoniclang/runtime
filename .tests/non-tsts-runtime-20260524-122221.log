@@ -1,0 +1,12 @@
+  Determining projects to restore...
+  Restored /home/jeswin/repos/tsoniclang/runtime/src/Tsonic.Runtime/Tsonic.Runtime.csproj (in 184 ms).
+  1 of 2 projects are up-to-date for restore.
+  Tsonic.Runtime -> /home/jeswin/repos/tsoniclang/runtime/artifacts/bin/Tsonic.Runtime/Release/net10.0/Tsonic.Runtime.dll
+  Tsonic.Runtime.Tests -> /home/jeswin/repos/tsoniclang/runtime/artifacts/bin/Tsonic.Runtime.Tests/Release/net10.0/Tsonic.Runtime.Tests.dll
+Test run for /home/jeswin/repos/tsoniclang/runtime/artifacts/bin/Tsonic.Runtime.Tests/Release/net10.0/Tsonic.Runtime.Tests.dll (.NETCoreApp,Version=v10.0)
+VSTest version 18.0.2 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    62, Skipped:     0, Total:    62, Duration: 31 ms - Tsonic.Runtime.Tests.dll (net10.0)
