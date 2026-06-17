@@ -1,4 +1,4 @@
-namespace Tsonic.Runtime;
+namespace Tsonic.CSharp.Runtime;
 
 /// <summary>
 /// Result type for generator iteration, matching JavaScript's IteratorResult interface.

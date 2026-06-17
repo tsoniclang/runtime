@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <!-- NuGet Package Properties -->
-    <PackageId>Tsonic.Runtime</PackageId>
+    <PackageId>Tsonic.CSharp.Runtime</PackageId>
     <Authors>Tsonic Project</Authors>
     <Description>TypeScript language runtime primitives for Tsonic compiler - provides Union types, structural typing, and other TS language features in C#</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/tsoniclang/runtime</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/tsoniclang/runtime.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/tsoniclang/csharp-runtime</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/tsoniclang/csharp-csharp-runtime.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>typescript;csharp;compiler;runtime;native-aot</PackageTags>
 

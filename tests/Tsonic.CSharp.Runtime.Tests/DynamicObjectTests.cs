@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Tsonic.Runtime;
+using Tsonic.CSharp.Runtime;
 using Xunit;
 
-namespace Tsonic.Runtime.Tests
+namespace Tsonic.CSharp.Runtime.Tests
 {
     public class DynamicObjectTests
     {

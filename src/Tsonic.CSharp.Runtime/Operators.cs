@@ -1,6 +1,6 @@
 using System;
 
-namespace Tsonic.Runtime
+namespace Tsonic.CSharp.Runtime
 {
     /// <summary>
     /// TypeScript operators that need runtime support
