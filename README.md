@@ -4,8 +4,8 @@ TypeScript language runtime primitives for the Tsonic compiler.
 
 ## Overview
 
-Tsonic.CSharp.Runtime contains mode-independent primitives used by Tsonic-generated C#
-in CLR, JavaScript-surface, Node-style, and ASP.NET Core projects.
+Tsonic.CSharp.Runtime contains primitives used by Tsonic-generated C# in
+JavaScript-surface, Node-style, and ASP.NET Core projects.
 
 The runtime provides:
 
@@ -22,14 +22,14 @@ The runtime provides:
 
 ## When to Use
 
-This library is referenced by **all** Tsonic projects.
+This library is referenced by Tsonic projects that compile to the C# target.
 
-- CLR/default-surface projects use `Tsonic.CSharp.Runtime`
+- C# target projects use `Tsonic.CSharp.Runtime`
 - First-party source surfaces such as `@tsonic/js`, `@tsonic/nodejs`, and `@tsonic/express` also use `Tsonic.CSharp.Runtime`
 
 ## What's NOT Here
 
-JavaScript and Node surface behavior is authored in first-party TypeScript source packages, not in separate CLR runtime packages:
+JavaScript and Node surface behavior is authored in first-party source packages, not in this runtime package:
 - Array methods (push, pop, map, filter, etc.)
 - String methods (toUpperCase, slice, includes, etc.)
 - Math, console, JS-surface `JSON`, and other global functions

@@ -8,7 +8,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/tsoniclang/csharp-runtime</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/tsoniclang/csharp-csharp-runtime.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/tsoniclang/csharp-runtime.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>typescript;csharp;compiler;runtime;native-aot</PackageTags>
 
