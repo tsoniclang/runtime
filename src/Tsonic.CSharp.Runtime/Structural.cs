@@ -1,4 +1,4 @@
-namespace Tsonic.Runtime;
+namespace Tsonic.CSharp.Runtime;
 
 using System;
 using System.Collections.Generic;

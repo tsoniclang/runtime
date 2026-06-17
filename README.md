@@ -1,10 +1,10 @@
-# Tsonic.Runtime
+# Tsonic.CSharp.Runtime
 
 TypeScript language runtime primitives for the Tsonic compiler.
 
 ## Overview
 
-Tsonic.Runtime contains mode-independent primitives used by Tsonic-generated C#
+Tsonic.CSharp.Runtime contains mode-independent primitives used by Tsonic-generated C#
 in CLR, JavaScript-surface, Node-style, and ASP.NET Core projects.
 
 The runtime provides:
@@ -24,8 +24,8 @@ The runtime provides:
 
 This library is referenced by **all** Tsonic projects.
 
-- CLR/default-surface projects use `Tsonic.Runtime`
-- First-party source surfaces such as `@tsonic/js`, `@tsonic/nodejs`, and `@tsonic/express` also use `Tsonic.Runtime`
+- CLR/default-surface projects use `Tsonic.CSharp.Runtime`
+- First-party source surfaces such as `@tsonic/js`, `@tsonic/nodejs`, and `@tsonic/express` also use `Tsonic.CSharp.Runtime`
 
 ## What's NOT Here
 
@@ -34,7 +34,7 @@ JavaScript and Node surface behavior is authored in first-party TypeScript sourc
 - String methods (toUpperCase, slice, includes, etc.)
 - Math, console, JS-surface `JSON`, and other global functions
 
-`Tsonic.Runtime` owns the compiler runtime carriers. It does not define the
+`Tsonic.CSharp.Runtime` owns the compiler runtime carriers. It does not define the
 user-facing `@tsonic/js` or `@tsonic/nodejs` API surface. The public JS and Node
 APIs live in their first-party source packages and compile down to deterministic
 runtime calls where needed.
@@ -57,7 +57,7 @@ This library is fully compatible with .NET NativeAOT, enabling TypeScript code t
 
 ## Package
 
-Published as `Tsonic.Runtime` on NuGet.
+Published as `Tsonic.CSharp.Runtime` on NuGet.
 
 ## License
 

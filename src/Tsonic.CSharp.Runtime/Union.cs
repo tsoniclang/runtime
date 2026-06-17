@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Tsonic.Runtime
+namespace Tsonic.CSharp.Runtime
 {
     /// <summary>
     /// Union of two types (T1 | T2 in TypeScript)

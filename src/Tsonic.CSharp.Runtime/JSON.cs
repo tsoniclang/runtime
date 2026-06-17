@@ -6,7 +6,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 
-namespace Tsonic.Runtime;
+namespace Tsonic.CSharp.Runtime;
 
 public static class JSON
 {

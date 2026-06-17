@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Tsonic.Runtime;
+namespace Tsonic.CSharp.Runtime;
 
 public class JSArray<T> : IEnumerable<T>
 {

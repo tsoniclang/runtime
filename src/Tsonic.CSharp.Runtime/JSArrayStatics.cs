@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Tsonic.Runtime;
+namespace Tsonic.CSharp.Runtime;
 
 public static class JSArrayStatics
 {

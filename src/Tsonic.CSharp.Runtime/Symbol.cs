@@ -1,4 +1,4 @@
-namespace Tsonic.Runtime;
+namespace Tsonic.CSharp.Runtime;
 
 public static class Symbol
 {

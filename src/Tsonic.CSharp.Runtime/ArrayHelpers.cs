@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Tsonic.Runtime;
+namespace Tsonic.CSharp.Runtime;
 
 /// <summary>
 /// Helper methods for array operations in compiled Tsonic code.
