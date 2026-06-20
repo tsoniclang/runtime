@@ -55,6 +55,20 @@ namespace Tsonic.CSharp.Runtime.Tests
         }
 
         [Fact]
+        public void Concat_CopiesChunksWithoutLinqIterators()
+        {
+            var result = ArrayHelpers.Concat([1, 2], [], [3], [4, 5]);
+
+            Assert.Collection(
+                result,
+                item => Assert.Equal(1, item),
+                item => Assert.Equal(2, item),
+                item => Assert.Equal(3, item),
+                item => Assert.Equal(4, item),
+                item => Assert.Equal(5, item));
+        }
+
+        [Fact]
         public void Slice_CopiesRangeWithPositiveIndexes()
         {
             var result = ArrayHelpers.Slice([1, 2, 3, 4, 5], 1, 4);

@@ -215,6 +215,25 @@ public static class ArrayHelpers
         return -1;
     }
 
+    public static T[] Concat<T>(params T[][] chunks)
+    {
+        var totalLength = 0;
+        for (var index = 0; index < chunks.Length; index++)
+        {
+            totalLength += chunks[index].Length;
+        }
+
+        var result = new T[totalLength];
+        var offset = 0;
+        for (var index = 0; index < chunks.Length; index++)
+        {
+            var chunk = chunks[index];
+            Array.Copy(chunk, 0, result, offset, chunk.Length);
+            offset += chunk.Length;
+        }
+        return result;
+    }
+
     /// <summary>
     /// Creates a JavaScript-compatible slice of an array.
     /// Used for array rest patterns and Array.prototype.slice on fixed CLR arrays.
