@@ -234,6 +234,16 @@ public static class ArrayHelpers
         return result;
     }
 
+    public static string Join<T>(T[] source, string separator = ",")
+    {
+        var parts = new string[source.Length];
+        for (var index = 0; index < source.Length; index++)
+        {
+            parts[index] = source[index]?.ToString() ?? "";
+        }
+        return string.Join(separator, parts);
+    }
+
     /// <summary>
     /// Creates a JavaScript-compatible slice of an array.
     /// Used for array rest patterns and Array.prototype.slice on fixed CLR arrays.
