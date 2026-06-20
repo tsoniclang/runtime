@@ -47,6 +47,174 @@ public static class ArrayHelpers
         return -1;
     }
 
+    public static void ForEach<T>(T[] source, Action<T> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            callback(source[index]);
+        }
+    }
+
+    public static void ForEach<T>(T[] source, Action<T, int> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            callback(source[index], index);
+        }
+    }
+
+    public static void ForEach<T>(T[] source, Action<T, int, T[]> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            callback(source[index], index, source);
+        }
+    }
+
+    public static bool Some<T>(T[] source, Func<T, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index]))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static bool Some<T>(T[] source, Func<T, int, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index], index))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static bool Some<T>(T[] source, Func<T, int, T[], bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index], index, source))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static bool Every<T>(T[] source, Func<T, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (!callback(source[index]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static bool Every<T>(T[] source, Func<T, int, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (!callback(source[index], index))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static bool Every<T>(T[] source, Func<T, int, T[], bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (!callback(source[index], index, source))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static int FindIndex<T>(T[] source, Func<T, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index]))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int FindIndex<T>(T[] source, Func<T, int, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index], index))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int FindIndex<T>(T[] source, Func<T, int, T[], bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index], index, source))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int FindLastIndex<T>(T[] source, Func<T, bool> callback)
+    {
+        for (var index = source.Length - 1; index >= 0; index--)
+        {
+            if (callback(source[index]))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int FindLastIndex<T>(T[] source, Func<T, int, bool> callback)
+    {
+        for (var index = source.Length - 1; index >= 0; index--)
+        {
+            if (callback(source[index], index))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int FindLastIndex<T>(T[] source, Func<T, int, T[], bool> callback)
+    {
+        for (var index = source.Length - 1; index >= 0; index--)
+        {
+            if (callback(source[index], index, source))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
     /// <summary>
     /// Creates a JavaScript-compatible slice of an array.
     /// Used for array rest patterns and Array.prototype.slice on fixed CLR arrays.

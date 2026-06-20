@@ -32,6 +32,29 @@ namespace Tsonic.CSharp.Runtime.Tests
         }
 
         [Fact]
+        public void PredicateHelpers_UseJavaScriptCallbackArguments()
+        {
+            int[] values = [1, 20, 3];
+            Assert.True(ArrayHelpers.Some(values, (value, index) => index == 1 && value == 20));
+            Assert.False(ArrayHelpers.Every(values, (value, index, source) => source[index] == value && value < 10));
+            Assert.Equal(1, ArrayHelpers.FindIndex(values, (value, index) => index > 0 && value > 10));
+            Assert.Equal(2, ArrayHelpers.FindLastIndex(values, (value, index, source) => source.Length == 3 && index >= 1));
+        }
+
+        [Fact]
+        public void ForEach_UsesJavaScriptCallbackArguments()
+        {
+            int[] values = [2, 4, 6];
+            var total = 0;
+            ArrayHelpers.ForEach(values, (value, index, source) =>
+            {
+                total += value + index + source.Length;
+            });
+
+            Assert.Equal(24, total);
+        }
+
+        [Fact]
         public void Slice_CopiesRangeWithPositiveIndexes()
         {
             var result = ArrayHelpers.Slice([1, 2, 3, 4, 5], 1, 4);
