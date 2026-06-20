@@ -10,19 +10,25 @@ namespace Tsonic.CSharp.Runtime;
 public static class ArrayHelpers
 {
     /// <summary>
-    /// Creates a slice of an array starting at the given index.
-    /// Used for array rest patterns: const [first, ...rest] = arr
+    /// Creates a JavaScript-compatible slice of an array.
+    /// Used for array rest patterns and Array.prototype.slice on fixed CLR arrays.
     /// </summary>
     /// <typeparam name="T">Element type of the array</typeparam>
     /// <param name="source">Source array to slice</param>
-    /// <param name="startIndex">Index to start slicing from</param>
-    /// <returns>New array containing elements from startIndex to end</returns>
-    public static T[] Slice<T>(T[] source, int startIndex)
+    /// <param name="startIndex">Inclusive start index. Negative values count from the end.</param>
+    /// <param name="endIndex">Exclusive end index. Negative values count from the end.</param>
+    /// <returns>New array containing the selected elements.</returns>
+    public static T[] Slice<T>(T[] source, int startIndex = 0, int? endIndex = null)
     {
-        if (startIndex >= source.Length) return [];
-        var length = source.Length - startIndex;
+        var start = NormalizeSliceStart(startIndex, source.Length);
+        var end = NormalizeSliceEnd(endIndex, source.Length);
+        var length = Math.Max(end - start, 0);
         var result = new T[length];
-        Array.Copy(source, startIndex, result, 0, length);
+        if (length == 0)
+        {
+            return result;
+        }
+        Array.Copy(source, start, result, 0, length);
         return result;
     }
 
@@ -57,5 +63,23 @@ public static class ArrayHelpers
     public static T[] Slice<T>(IEnumerable<T> source, int startIndex)
     {
         return source.Skip(startIndex).ToArray();
+    }
+
+    private static int NormalizeSliceStart(int index, int length)
+    {
+        return index < 0
+            ? Math.Max(length + index, 0)
+            : Math.Min(index, length);
+    }
+
+    private static int NormalizeSliceEnd(int? index, int length)
+    {
+        if (!index.HasValue)
+        {
+            return length;
+        }
+        return index.Value < 0
+            ? Math.Max(length + index.Value, 0)
+            : Math.Min(index.Value, length);
     }
 }
