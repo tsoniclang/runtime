@@ -9,20 +9,251 @@ namespace Tsonic.CSharp.Runtime;
 /// </summary>
 public static class ArrayHelpers
 {
+    public static bool Includes<T>(T[] source, T value, int fromIndex = 0)
+    {
+        return IndexOf(source, value, fromIndex) >= 0;
+    }
+
+    public static int IndexOf<T>(T[] source, T value, int fromIndex = 0)
+    {
+        var start = NormalizeForwardSearchStart(fromIndex, source.Length);
+        var comparer = EqualityComparer<T>.Default;
+        for (var index = start; index < source.Length; index++)
+        {
+            if (comparer.Equals(source[index], value))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int LastIndexOf<T>(T[] source, T value, int? fromIndex = null)
+    {
+        var start = NormalizeBackwardSearchStart(fromIndex, source.Length);
+        if (start < 0)
+        {
+            return -1;
+        }
+
+        var comparer = EqualityComparer<T>.Default;
+        for (var index = start; index >= 0; index--)
+        {
+            if (comparer.Equals(source[index], value))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static void ForEach<T>(T[] source, Action<T> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            callback(source[index]);
+        }
+    }
+
+    public static void ForEach<T>(T[] source, Action<T, int> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            callback(source[index], index);
+        }
+    }
+
+    public static void ForEach<T>(T[] source, Action<T, int, T[]> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            callback(source[index], index, source);
+        }
+    }
+
+    public static bool Some<T>(T[] source, Func<T, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index]))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static bool Some<T>(T[] source, Func<T, int, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index], index))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static bool Some<T>(T[] source, Func<T, int, T[], bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index], index, source))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static bool Every<T>(T[] source, Func<T, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (!callback(source[index]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static bool Every<T>(T[] source, Func<T, int, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (!callback(source[index], index))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static bool Every<T>(T[] source, Func<T, int, T[], bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (!callback(source[index], index, source))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static int FindIndex<T>(T[] source, Func<T, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index]))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int FindIndex<T>(T[] source, Func<T, int, bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index], index))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int FindIndex<T>(T[] source, Func<T, int, T[], bool> callback)
+    {
+        for (var index = 0; index < source.Length; index++)
+        {
+            if (callback(source[index], index, source))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int FindLastIndex<T>(T[] source, Func<T, bool> callback)
+    {
+        for (var index = source.Length - 1; index >= 0; index--)
+        {
+            if (callback(source[index]))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int FindLastIndex<T>(T[] source, Func<T, int, bool> callback)
+    {
+        for (var index = source.Length - 1; index >= 0; index--)
+        {
+            if (callback(source[index], index))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int FindLastIndex<T>(T[] source, Func<T, int, T[], bool> callback)
+    {
+        for (var index = source.Length - 1; index >= 0; index--)
+        {
+            if (callback(source[index], index, source))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static T[] Concat<T>(params T[][] chunks)
+    {
+        var totalLength = 0;
+        for (var index = 0; index < chunks.Length; index++)
+        {
+            totalLength += chunks[index].Length;
+        }
+
+        var result = new T[totalLength];
+        var offset = 0;
+        for (var index = 0; index < chunks.Length; index++)
+        {
+            var chunk = chunks[index];
+            Array.Copy(chunk, 0, result, offset, chunk.Length);
+            offset += chunk.Length;
+        }
+        return result;
+    }
+
     /// <summary>
-    /// Creates a slice of an array starting at the given index.
-    /// Used for array rest patterns: const [first, ...rest] = arr
+    /// Creates a JavaScript-compatible slice of an array.
+    /// Used for array rest patterns and Array.prototype.slice on fixed CLR arrays.
     /// </summary>
     /// <typeparam name="T">Element type of the array</typeparam>
     /// <param name="source">Source array to slice</param>
-    /// <param name="startIndex">Index to start slicing from</param>
-    /// <returns>New array containing elements from startIndex to end</returns>
-    public static T[] Slice<T>(T[] source, int startIndex)
+    /// <param name="startIndex">Inclusive start index. Negative values count from the end.</param>
+    /// <param name="endIndex">Exclusive end index. Negative values count from the end.</param>
+    /// <returns>New array containing the selected elements.</returns>
+    public static T[] Slice<T>(T[] source, int startIndex = 0, int? endIndex = null)
     {
-        if (startIndex >= source.Length) return [];
-        var length = source.Length - startIndex;
+        var start = NormalizeSliceStart(startIndex, source.Length);
+        var end = NormalizeSliceEnd(endIndex, source.Length);
+        var length = Math.Max(end - start, 0);
         var result = new T[length];
-        Array.Copy(source, startIndex, result, 0, length);
+        if (length == 0)
+        {
+            return result;
+        }
+        Array.Copy(source, start, result, 0, length);
         return result;
     }
 
@@ -57,5 +288,49 @@ public static class ArrayHelpers
     public static T[] Slice<T>(IEnumerable<T> source, int startIndex)
     {
         return source.Skip(startIndex).ToArray();
+    }
+
+    private static int NormalizeSliceStart(int index, int length)
+    {
+        return index < 0
+            ? Math.Max(length + index, 0)
+            : Math.Min(index, length);
+    }
+
+    private static int NormalizeSliceEnd(int? index, int length)
+    {
+        if (!index.HasValue)
+        {
+            return length;
+        }
+        return index.Value < 0
+            ? Math.Max(length + index.Value, 0)
+            : Math.Min(index.Value, length);
+    }
+
+    private static int NormalizeForwardSearchStart(int index, int length)
+    {
+        if (index >= length)
+        {
+            return length;
+        }
+        return index < 0
+            ? Math.Max(length + index, 0)
+            : index;
+    }
+
+    private static int NormalizeBackwardSearchStart(int? index, int length)
+    {
+        if (length == 0)
+        {
+            return -1;
+        }
+        if (!index.HasValue)
+        {
+            return length - 1;
+        }
+        return index.Value < 0
+            ? length + index.Value
+            : Math.Min(index.Value, length - 1);
     }
 }
