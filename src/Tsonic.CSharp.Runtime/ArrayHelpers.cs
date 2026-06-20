@@ -9,6 +9,44 @@ namespace Tsonic.CSharp.Runtime;
 /// </summary>
 public static class ArrayHelpers
 {
+    public static bool Includes<T>(T[] source, T value, int fromIndex = 0)
+    {
+        return IndexOf(source, value, fromIndex) >= 0;
+    }
+
+    public static int IndexOf<T>(T[] source, T value, int fromIndex = 0)
+    {
+        var start = NormalizeForwardSearchStart(fromIndex, source.Length);
+        var comparer = EqualityComparer<T>.Default;
+        for (var index = start; index < source.Length; index++)
+        {
+            if (comparer.Equals(source[index], value))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public static int LastIndexOf<T>(T[] source, T value, int? fromIndex = null)
+    {
+        var start = NormalizeBackwardSearchStart(fromIndex, source.Length);
+        if (start < 0)
+        {
+            return -1;
+        }
+
+        var comparer = EqualityComparer<T>.Default;
+        for (var index = start; index >= 0; index--)
+        {
+            if (comparer.Equals(source[index], value))
+            {
+                return index;
+            }
+        }
+        return -1;
+    }
+
     /// <summary>
     /// Creates a JavaScript-compatible slice of an array.
     /// Used for array rest patterns and Array.prototype.slice on fixed CLR arrays.
@@ -81,5 +119,31 @@ public static class ArrayHelpers
         return index.Value < 0
             ? Math.Max(length + index.Value, 0)
             : Math.Min(index.Value, length);
+    }
+
+    private static int NormalizeForwardSearchStart(int index, int length)
+    {
+        if (index >= length)
+        {
+            return length;
+        }
+        return index < 0
+            ? Math.Max(length + index, 0)
+            : index;
+    }
+
+    private static int NormalizeBackwardSearchStart(int? index, int length)
+    {
+        if (length == 0)
+        {
+            return -1;
+        }
+        if (!index.HasValue)
+        {
+            return length - 1;
+        }
+        return index.Value < 0
+            ? length + index.Value
+            : Math.Min(index.Value, length - 1);
     }
 }
