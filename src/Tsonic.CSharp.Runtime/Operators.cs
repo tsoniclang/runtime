@@ -3,58 +3,12 @@ using System;
 namespace Tsonic.CSharp.Runtime
 {
     /// <summary>
-    /// TypeScript operators that need runtime support
+    /// Deterministic closed helpers for JavaScript number bitwise operators.
     /// </summary>
     public static class Operators
     {
         private const double TwoPow32 = 4294967296.0;
         private const int ShiftCountMask = 31;
-
-        /// <summary>
-        /// typeof operator - returns TypeScript/JavaScript type string
-        /// </summary>
-        public static string @typeof(object? value)
-        {
-            if (value == null)
-            {
-                return "undefined";
-            }
-
-            if (value is string)
-            {
-                return "string";
-            }
-
-            if (value is double || value is int || value is float || value is long || value is decimal)
-            {
-                return "number";
-            }
-
-            if (value is bool)
-            {
-                return "boolean";
-            }
-
-            if (value is Delegate)
-            {
-                return "function";
-            }
-
-            return "object";
-        }
-
-        /// <summary>
-        /// instanceof operator - checks if object is instance of type
-        /// </summary>
-        public static bool instanceof(object? obj, Type type)
-        {
-            if (obj == null)
-            {
-                return false;
-            }
-
-            return type.IsAssignableFrom(obj.GetType());
-        }
 
         /// <summary>
         /// ECMAScript ToUint32 abstract operation for number bitwise operators.
