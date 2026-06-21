@@ -69,6 +69,13 @@ namespace Tsonic.CSharp.Runtime.Tests
         }
 
         [Fact]
+        public void Join_UsesJavaScriptSeparatorAndNullElementSemantics()
+        {
+            Assert.Equal("1|2|3", ArrayHelpers.Join([1, 2, 3], "|"));
+            Assert.Equal("a,,c", ArrayHelpers.Join<string?>(["a", null, "c"]));
+        }
+
+        [Fact]
         public void Slice_CopiesRangeWithPositiveIndexes()
         {
             var result = ArrayHelpers.Slice([1, 2, 3, 4, 5], 1, 4);
