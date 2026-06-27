@@ -53,5 +53,7 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 .codespin/
-# Local verification logs
+# Local analysis, scratch, and verification logs
+.temp/
+.analysis/
 .tests/
