@@ -234,6 +234,29 @@ public static class ArrayHelpers
         return result;
     }
 
+    public static T[] Concat<T>(params IEnumerable<T>[] chunks)
+    {
+        var arrays = new T[chunks.Length][];
+        var totalLength = 0;
+        for (var index = 0; index < chunks.Length; index++)
+        {
+            var chunk = chunks[index];
+            var array = chunk as T[] ?? chunk.ToArray();
+            arrays[index] = array;
+            totalLength += array.Length;
+        }
+
+        var result = new T[totalLength];
+        var offset = 0;
+        for (var index = 0; index < arrays.Length; index++)
+        {
+            var chunk = arrays[index];
+            Array.Copy(chunk, 0, result, offset, chunk.Length);
+            offset += chunk.Length;
+        }
+        return result;
+    }
+
     public static string Join<T>(T[] source, string separator = ",")
     {
         var parts = new string[source.Length];
