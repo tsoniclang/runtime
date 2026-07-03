@@ -1,0 +1,13 @@
+{
+  "name": "@tsonic/csharp-runtime",
+  "version": "0.0.1",
+  "description": "C# core runtime artifacts for Tsonic",
+  "type": "module",
+  "files": ["runtimes", "README.md", "LICENSE"],
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
