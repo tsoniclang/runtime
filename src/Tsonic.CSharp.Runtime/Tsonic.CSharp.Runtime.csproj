@@ -21,4 +21,12 @@
     <None Include="../../README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
+  <Target Name="CopyInstalledRuntimeArtifact" AfterTargets="Build">
+    <PropertyGroup>
+      <TsonicRuntimeArtifactDirectory>$(MSBuildProjectDirectory)/../../runtimes/$(TargetFramework)</TsonicRuntimeArtifactDirectory>
+    </PropertyGroup>
+    <MakeDir Directories="$(TsonicRuntimeArtifactDirectory)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TsonicRuntimeArtifactDirectory)" />
+  </Target>
+
 </Project>

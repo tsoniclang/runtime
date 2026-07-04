@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Tsonic.CSharp.Runtime;
 using Xunit;
 
@@ -66,6 +67,22 @@ namespace Tsonic.CSharp.Runtime.Tests
                 item => Assert.Equal(3, item),
                 item => Assert.Equal(4, item),
                 item => Assert.Equal(5, item));
+        }
+
+        [Fact]
+        public void Concat_CopiesEnumerableChunksFromClosedCarrierFacts()
+        {
+            IEnumerable<int> left = new List<int> { 1, 2 };
+            IEnumerable<int> right = new[] { 3, 4 };
+
+            var result = ArrayHelpers.Concat(left, right);
+
+            Assert.Collection(
+                result,
+                item => Assert.Equal(1, item),
+                item => Assert.Equal(2, item),
+                item => Assert.Equal(3, item),
+                item => Assert.Equal(4, item));
         }
 
         [Fact]

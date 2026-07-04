@@ -138,6 +138,21 @@ namespace Tsonic.CSharp.Runtime.Tests
         }
 
         [Fact]
+        public void Union3_PreservesNeutralNullAndUndefinedArms()
+        {
+            Union<int, string, Undefined> undefinedUnion = Undefined.value;
+            Union<int, string, Null> nullUnion = Null.value;
+
+            Assert.True(undefinedUnion.Is3());
+            Assert.Same(Undefined.value, undefinedUnion.As3());
+            Assert.Equal("undefined", undefinedUnion.ToString());
+
+            Assert.True(nullUnion.Is3());
+            Assert.Same(Null.value, nullUnion.As3());
+            Assert.Equal("null", nullUnion.ToString());
+        }
+
+        [Fact]
         public void Union3_Match_CallsCorrectFunction()
         {
             Union<int, string, bool> union = true;
