@@ -22,10 +22,19 @@ to the equivalent closed C# shape:
 
 ```csharp
 var value = 1;
-var pointer = Location<int>.Create(() => value, next => value = next);
+var identity = new object();
+var pointer = Location<int>.CreateLocal(
+    identity,
+    () => value,
+    next => value = next);
 pointer.Store(pointer.Load() + 1);
 ```
 
-`Create` captures an existing location, `Allocate` creates fresh independent
-storage, and `Project` preserves write-back through nested value-type storage.
-All APIs are delegate-based and compatible with trimming and NativeAOT.
+`CreateLocal` binds emitted local or parameter storage to its compiler-owned
+identity token. `CreateStatic`, `CreateMember`, and `CreateArrayElement`
+represent exact static, receiver/member, and array/index locations.
+`ProjectMember` preserves write-back through nested value-type storage.
+`Allocate` creates fresh independent storage, and `Same` compares canonical
+storage identity rather than wrapper-object identity. Array address formation
+validates its index immediately. The carrier is closed, reflection-free, and
+compatible with trimming and NativeAOT.
