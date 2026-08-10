@@ -13,6 +13,8 @@ public readonly record struct IteratorResult<TYield, TReturn>(
 {
     public Union<TYield, TReturn> value => Value;
     public bool done => Done;
+    public TYield YieldValue => Value.As1();
+    public TReturn ReturnValue => Value.As2();
 }
 
 public sealed class Generator<TYield, TReturn, TNext> : IEnumerable<TYield>, IDisposable
