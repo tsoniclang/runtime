@@ -4,6 +4,13 @@ Base C# runtime substrate for Tsonic-generated C#.
 
 This repository contains target-runtime primitives that emitted C# may need even when a program does not select JavaScript or Node compatibility. JavaScript/global APIs live in `csharp-js`. Node APIs live in `csharp-nodejs`.
 
+The always-available substrate includes `Undefined`, closed union carriers,
+generator/resource-management helpers, typed locations, and the closed
+`TsValue` object/array/function carriers used for TypeScript `any` and
+`unknown`. Surface runtimes may implement `IDynamicObject` or `IDynamicArray`
+to participate in those closed operations without making the core runtime
+depend on a surface package.
+
 ## Typed locations
 
 `Location<T>` is the closed runtime carrier for Tsonic's neutral `Pointer<T>`
