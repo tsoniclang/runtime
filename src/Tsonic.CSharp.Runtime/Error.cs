@@ -7,6 +7,10 @@ namespace Tsonic.CSharp.Runtime
     /// </summary>
     public class Error : Exception
     {
+        private string _name = nameof(Error);
+        private string _message = string.Empty;
+        private string? _stack;
+
         public Error()
         {
         }
@@ -14,17 +18,33 @@ namespace Tsonic.CSharp.Runtime
         public Error(string? message)
             : base(message)
         {
+            _message = message ?? string.Empty;
         }
 
         public Error(string? message, Exception? innerException)
             : base(message, innerException)
         {
+            _message = message ?? string.Empty;
         }
 
-        public virtual string name => nameof(Error);
+        public virtual string name
+        {
+            get => _name;
+            set => _name = value;
+        }
 
-        public string message => Message;
+        public string message
+        {
+            get => _message;
+            set => _message = value;
+        }
 
-        public string? stack => StackTrace;
+        public string? stack
+        {
+            get => _stack ?? StackTrace;
+            set => _stack = value;
+        }
+
+        public override string Message => _message;
     }
 }

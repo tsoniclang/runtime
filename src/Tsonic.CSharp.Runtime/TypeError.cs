@@ -21,6 +21,6 @@ namespace Tsonic.CSharp.Runtime
         {
         }
 
-        public override string name => nameof(TypeError);
+        public override string name { get; set; } = nameof(TypeError);
     }
 }
