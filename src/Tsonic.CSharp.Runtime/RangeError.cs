@@ -21,6 +21,6 @@ namespace Tsonic.CSharp.Runtime
         {
         }
 
-        public override string name => nameof(RangeError);
+        public override string name { get; set; } = nameof(RangeError);
     }
 }
