@@ -94,6 +94,11 @@ namespace Tsonic.CSharp.Runtime
             return _value;
         }
 
+        public bool isUndefined()
+        {
+            return unwrapForOperation(_value) is Undefined;
+        }
+
         public TsValue ReadDynamicSlot(string key)
         {
             return unwrapForOperation(_value) switch
@@ -396,6 +401,7 @@ namespace Tsonic.CSharp.Runtime
                 Undefined => true,
                 IDictionary<string, object?> => true,
                 IReadOnlyDictionary<string, object?> => true,
+                ITsClosedValueCarrier => true,
                 _ => false
             };
         }
