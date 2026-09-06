@@ -7,12 +7,12 @@ namespace Tsonic.CSharp.Runtime
     public sealed unsafe class RawPointer : IEquatable<RawPointer>
     {
         private readonly void* _address;
-        private readonly NativeAllocation? _allocation;
+        private readonly NativeBacking? _backing;
 
-        private RawPointer(void* address, NativeAllocation? allocation)
+        private RawPointer(void* address, NativeBacking? backing)
         {
             _address = address;
-            _allocation = allocation;
+            _backing = backing;
         }
 
         internal static RawPointer Allocate(nuint size, nuint alignment)
@@ -27,6 +27,21 @@ namespace Tsonic.CSharp.Runtime
             return address == 0 ? null : new RawPointer((void*)checked((nuint)address), null);
         }
 
+        public static RawPointer? FromExternal(void* address, nuint size, object owner)
+        {
+            ArgumentNullException.ThrowIfNull(owner);
+            if (address == null)
+            {
+                if (size != 0) throw new ArgumentException("A null external address cannot describe a nonempty region.");
+                return null;
+            }
+            if (size > nuint.MaxValue - (nuint)address)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
+            return new RawPointer(address, new ExternalBacking(address, size, owner));
+        }
+
         public static ulong Address(RawPointer? pointer, int width)
         {
             RequireAddressWidth(width);
@@ -37,7 +52,7 @@ namespace Tsonic.CSharp.Runtime
         {
             RequireAddressWidth(width);
             var address = checked((nuint)((Int128)(pointer is null ? 0 : (nuint)pointer._address) + offset));
-            return address == 0 ? null : new RawPointer((void*)address, pointer?._allocation);
+            return address == 0 ? null : new RawPointer((void*)address, pointer?._backing);
         }
 
         public static bool Same(RawPointer? left, RawPointer? right) =>
@@ -62,7 +77,7 @@ namespace Tsonic.CSharp.Runtime
         {
             RequireExtent((nuint)sizeof(T));
             var value = Unsafe.ReadUnaligned<T>(_address);
-            GC.KeepAlive(_allocation);
+            GC.KeepAlive(_backing);
             return value;
         }
 
@@ -70,7 +85,7 @@ namespace Tsonic.CSharp.Runtime
         {
             RequireExtent((nuint)sizeof(T));
             Unsafe.WriteUnaligned(_address, value);
-            GC.KeepAlive(_allocation);
+            GC.KeepAlive(_backing);
         }
 
         internal void RequireLayout(nuint size, nuint alignment)
@@ -85,11 +100,11 @@ namespace Tsonic.CSharp.Runtime
 
         private void RequireExtent(nuint size)
         {
-            if (_allocation is null) return;
-            var start = (nuint)_allocation.Address;
+            if (_backing is null) return;
+            var start = (nuint)_backing.Address;
             var address = (nuint)_address;
-            if (address < start || address - start > _allocation.Size ||
-                size > _allocation.Size - (address - start))
+            if (address < start || address - start > _backing.Size ||
+                size > _backing.Size - (address - start))
             {
                 throw new IndexOutOfRangeException("The raw access exceeds its retained allocation.");
             }
@@ -103,23 +118,44 @@ namespace Tsonic.CSharp.Runtime
             }
         }
 
-        private sealed class NativeAllocation
+        private abstract class NativeBacking
         {
             internal void* Address { get; }
             internal nuint Size { get; }
 
-            internal NativeAllocation(nuint size, nuint alignment)
+            protected NativeBacking(void* address, nuint size)
+            {
+                Address = address;
+                Size = size;
+            }
+        }
+
+        private sealed class ExternalBacking : NativeBacking
+        {
+            internal object Owner { get; }
+
+            internal ExternalBacking(void* address, nuint size, object owner) : base(address, size)
+            {
+                Owner = owner;
+            }
+        }
+
+        private sealed class NativeAllocation : NativeBacking
+        {
+            internal NativeAllocation(nuint size, nuint alignment) : base(AllocateAddress(size, alignment), size) { }
+
+            private static void* AllocateAddress(nuint size, nuint alignment)
             {
                 if (alignment == 0 || (alignment & (alignment - 1)) != 0)
                 {
                     throw new ArgumentOutOfRangeException(nameof(alignment));
                 }
-                Size = size;
                 var nativeAlignment = nuint.Max(alignment, (nuint)IntPtr.Size);
                 var allocatedSize = checked((nuint.Max(size, 1) + nativeAlignment - 1) & ~(nativeAlignment - 1));
-                Address = NativeMemory.AlignedAlloc(allocatedSize, nativeAlignment);
-                if (Address == null) throw new OutOfMemoryException();
-                NativeMemory.Clear(Address, allocatedSize);
+                var address = NativeMemory.AlignedAlloc(allocatedSize, nativeAlignment);
+                if (address == null) throw new OutOfMemoryException();
+                NativeMemory.Clear(address, allocatedSize);
+                return address;
             }
 
             ~NativeAllocation() => NativeMemory.AlignedFree(Address);
