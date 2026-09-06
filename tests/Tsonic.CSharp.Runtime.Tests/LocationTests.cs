@@ -7,6 +7,65 @@ namespace Tsonic.CSharp.Runtime.Tests
     public sealed class LocationTests
     {
         [Fact]
+        public void BoundAndProjectedLocationsPreserveStorageAndHash()
+        {
+            var identity = new object();
+            var value = 3;
+            var first = Location<int>.Bind(identity, () => value, next => value = next);
+            var alias = Location<int>.Bind(identity, () => value, next => value = next);
+            var shifted = Location<int>.Project(first, source => source + 1, target => target - 1);
+            var hash = Location<int>.Hash(first);
+
+            Assert.Equal(4, shifted.Load());
+            shifted.Store(9);
+            Assert.Equal(8, value);
+            Assert.Equal(8, alias.Load());
+            Assert.True(Location<int>.Same(first, alias));
+            Assert.True(Location<int>.Same(first, shifted));
+            Assert.Equal(hash, Location<int>.Hash(alias));
+            Assert.Equal(hash, Location<int>.Hash(shifted));
+            Assert.Equal(0, Location<int>.Hash(null));
+            Assert.Null(Location<int>.ProjectOptional<int>(null,
+                _ => throw new Exception("read must stay lazy"),
+                _ => throw new Exception("write must stay lazy")));
+        }
+
+        [Fact]
+        public void HashAgreesForRepeatedMemberAndElementLocations()
+        {
+            var owner = Location<int[]>.Allocate(new[] { 1, 2 });
+            var first = owner.ProjectMember("first", values => values[0], (values, next) =>
+            {
+                values[0] = next;
+                return values;
+            });
+            var alias = owner.ProjectMember("first", values => values[0], (values, next) =>
+            {
+                values[0] = next;
+                return values;
+            });
+            Assert.True(Location<int>.Same(first, alias));
+            Assert.Equal(Location<int>.Hash(first), Location<int>.Hash(alias));
+            var values = new[] { 1, 2 };
+            Assert.Equal(Location<int>.Hash(Location<int>.CreateArrayElement(values, 0)),
+                Location<int>.Hash(Location<int>.CreateArrayElement(values, 0UL)));
+        }
+
+        [Fact]
+        public void ProjectionRetainsItsOriginalOwnerAndPropagatesCallbackExceptions()
+        {
+            var source = Location<int>.Allocate(5);
+            var pointer = Location<long>.Project(source, value => value, value => checked((int)value));
+            source = null!;
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            pointer.Store(7L);
+            Assert.Equal(7L, pointer.Load());
+            Assert.Throws<OverflowException>(() => pointer.Store(long.MaxValue));
+            Assert.Equal(7L, pointer.Load());
+        }
+
+        [Fact]
         public void CreateAliasesExistingStorage()
         {
             var storage = 10;
