@@ -152,6 +152,8 @@ namespace Tsonic.CSharp.Runtime
 
         public T Load() => _load();
 
+        public T Value { get => _load(); set => _store(value); }
+
         internal static Location<T> CreateNative(RawPointer pointer, Func<T> read, Action<T> write) =>
             new Location<T>(new NativeLocationIdentity(pointer), read, write) { RawBacking = pointer };
 

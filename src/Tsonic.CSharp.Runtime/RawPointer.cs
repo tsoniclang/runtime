@@ -95,7 +95,7 @@ namespace Tsonic.CSharp.Runtime
             }
         }
 
-        private static void RequireAddressWidth(int width)
+        internal static void RequireAddressWidth(int width)
         {
             if (width != IntPtr.Size * 8)
             {
@@ -128,16 +128,18 @@ namespace Tsonic.CSharp.Runtime
 
     public static unsafe class NativeLocation
     {
-        public static Location<T> Allocate<T>(T initial, nuint size, nuint alignment) where T : unmanaged
+        public static Location<T> Allocate<T>(T initial, nuint size, nuint alignment, int width, bool littleEndian) where T : unmanaged
         {
+            RequireAbi(width, littleEndian);
             RequireSize<T>(size);
             var pointer = RawPointer.Allocate(size, alignment);
             pointer.Write(initial);
             return Create<T>(pointer, size, alignment);
         }
 
-        public static RawPointer? ToRaw<T>(Location<T>? pointer, nuint size, nuint alignment) where T : unmanaged
+        public static RawPointer? ToRaw<T>(Location<T>? pointer, nuint size, nuint alignment, int width, bool littleEndian) where T : unmanaged
         {
+            RequireAbi(width, littleEndian);
             RequireSize<T>(size);
             if (pointer is null) return null;
             var raw = pointer.RawBacking ?? throw new InvalidOperationException(
@@ -146,8 +148,21 @@ namespace Tsonic.CSharp.Runtime
             return raw;
         }
 
-        public static Location<T>? Reinterpret<T>(RawPointer? pointer, nuint size, nuint alignment) where T : unmanaged =>
-            pointer is null ? null : Create<T>(pointer, size, alignment);
+        public static Location<T>? Reinterpret<T>(RawPointer? pointer, nuint size, nuint alignment, int width, bool littleEndian) where T : unmanaged
+        {
+            RequireAbi(width, littleEndian);
+            RequireSize<T>(size);
+            return pointer is null ? null : Create<T>(pointer, size, alignment);
+        }
+
+        private static void RequireAbi(int width, bool littleEndian)
+        {
+            RawPointer.RequireAddressWidth(width);
+            if (littleEndian != BitConverter.IsLittleEndian)
+            {
+                throw new PlatformNotSupportedException("The selected memory byte order differs from the native process.");
+            }
+        }
 
         private static Location<T> Create<T>(RawPointer pointer, nuint size, nuint alignment) where T : unmanaged
         {
