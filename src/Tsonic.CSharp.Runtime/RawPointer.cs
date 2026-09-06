@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Tsonic.CSharp.Runtime
 {
-    public sealed unsafe class RawPointer
+    public sealed unsafe class RawPointer : IEquatable<RawPointer>
     {
         private readonly void* _address;
         private readonly NativeAllocation? _allocation;
@@ -42,6 +42,15 @@ namespace Tsonic.CSharp.Runtime
 
         public static bool Same(RawPointer? left, RawPointer? right) =>
             (left is null ? null : left._address) == (right is null ? null : right._address);
+
+        public static RawPointer? OffsetUnsigned(RawPointer? pointer, UInt128 offset, int width) =>
+            Offset(pointer, checked((Int128)offset), width);
+
+        public bool Equals(RawPointer? other) => Same(this, other);
+
+        public override bool Equals(object? other) => other is RawPointer pointer && Equals(pointer);
+
+        public override int GetHashCode() => unchecked((int)(uint)Hash(this));
 
         public static double Hash(RawPointer? pointer)
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Tsonic.CSharp.Runtime;
 using Xunit;
 
@@ -7,6 +8,20 @@ namespace Tsonic.CSharp.Runtime.Tests
     public sealed class RawPointerTests
     {
         private static int Width => IntPtr.Size * 8;
+
+        [Fact]
+        public void NativeCollectionsUseAddressIdentityRatherThanWrapperIdentity()
+        {
+            var first = RawPointer.FromAddress(4096, Width)!;
+            var same = RawPointer.FromAddress(4096, Width)!;
+            var other = RawPointer.FromAddress(8192, Width)!;
+            var values = new HashSet<RawPointer> { first, same, other };
+            Assert.Equal(2, values.Count);
+            Assert.True(first.Equals(same));
+            Assert.False(first.Equals(other));
+            Assert.False(first.Equals(null));
+            Assert.Equal(first.GetHashCode(), same.GetHashCode());
+        }
 
         [Fact]
         public void NativeRoundTripMutatesTheOriginalAndRetainsItsOwner()
@@ -52,6 +67,10 @@ namespace Tsonic.CSharp.Runtime.Tests
             Assert.Throws<OverflowException>(() => RawPointer.Offset(
                 RawPointer.FromAddress(Width == 64 ? ulong.MaxValue : uint.MaxValue, Width), 1, Width));
             Assert.Throws<PlatformNotSupportedException>(() => RawPointer.FromAddress(1, Width == 64 ? 32 : 64));
+            Assert.Throws<OverflowException>(() => RawPointer.OffsetUnsigned(null, UInt128.MaxValue, Width));
+            Assert.Throws<OverflowException>(() => RawPointer.Offset(null, Int128.MaxValue, Width));
+            Assert.Throws<OverflowException>(() => RawPointer.Offset(null, Int128.MinValue, Width));
+            Assert.Equal(4UL, RawPointer.Address(RawPointer.OffsetUnsigned(null, 4, Width), Width));
         }
 
         [Fact]
