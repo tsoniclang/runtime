@@ -81,6 +81,20 @@ namespace Tsonic.CSharp.Runtime
             return value;
         }
 
+        public T ReadAt<T>(nuint offset, nuint alignment) where T : unmanaged
+        {
+            var field = Offset(this, (Int128)offset, IntPtr.Size * 8)!;
+            field.RequireLayout((nuint)sizeof(T), alignment);
+            return field.Read<T>();
+        }
+
+        public void WriteAt<T>(nuint offset, nuint alignment, T value) where T : unmanaged
+        {
+            var field = Offset(this, (Int128)offset, IntPtr.Size * 8)!;
+            field.RequireLayout((nuint)sizeof(T), alignment);
+            field.Write(value);
+        }
+
         internal void Write<T>(T value) where T : unmanaged
         {
             RequireExtent((nuint)sizeof(T));
@@ -164,55 +178,37 @@ namespace Tsonic.CSharp.Runtime
 
     public static unsafe class NativeLocation
     {
-        public static Location<T> Allocate<T>(T initial, nuint size, nuint alignment, int width, bool littleEndian) where T : unmanaged
+        public static Location<T> Allocate<T>(T initial, NativeLayout<T> layout)
         {
-            RequireAbi(width, littleEndian);
-            RequireSize<T>(size);
-            var pointer = RawPointer.Allocate(size, alignment);
-            pointer.Write(initial);
-            return Create<T>(pointer, size, alignment);
+            ArgumentNullException.ThrowIfNull(layout);
+            layout.RequireAbi();
+            var pointer = RawPointer.Allocate(layout.Size, layout.Alignment);
+            layout.Write(pointer, initial);
+            return Create(pointer, layout);
         }
 
-        public static RawPointer? ToRaw<T>(Location<T>? pointer, nuint size, nuint alignment, int width, bool littleEndian) where T : unmanaged
+        public static RawPointer? ToRaw<T>(Location<T>? pointer, NativeLayout<T> layout)
         {
-            RequireAbi(width, littleEndian);
-            RequireSize<T>(size);
+            ArgumentNullException.ThrowIfNull(layout);
+            layout.RequireAbi();
             if (pointer is null) return null;
             var raw = pointer.RawBacking ?? throw new InvalidOperationException(
                 "The selected location has no proven physical backing.");
-            raw.RequireLayout(size, alignment);
+            raw.RequireLayout(layout.Size, layout.Alignment);
             return raw;
         }
 
-        public static Location<T>? Reinterpret<T>(RawPointer? pointer, nuint size, nuint alignment, int width, bool littleEndian) where T : unmanaged
+        public static Location<T>? Reinterpret<T>(RawPointer? pointer, NativeLayout<T> layout)
         {
-            RequireAbi(width, littleEndian);
-            RequireSize<T>(size);
-            return pointer is null ? null : Create<T>(pointer, size, alignment);
+            ArgumentNullException.ThrowIfNull(layout);
+            layout.RequireAbi();
+            return pointer is null ? null : Create(pointer, layout);
         }
 
-        private static void RequireAbi(int width, bool littleEndian)
+        private static Location<T> Create<T>(RawPointer pointer, NativeLayout<T> layout)
         {
-            RawPointer.RequireAddressWidth(width);
-            if (littleEndian != BitConverter.IsLittleEndian)
-            {
-                throw new PlatformNotSupportedException("The selected memory byte order differs from the native process.");
-            }
-        }
-
-        private static Location<T> Create<T>(RawPointer pointer, nuint size, nuint alignment) where T : unmanaged
-        {
-            RequireSize<T>(size);
-            pointer.RequireLayout(size, alignment);
-            return Location<T>.CreateNative(pointer, pointer.Read<T>, pointer.Write<T>);
-        }
-
-        private static void RequireSize<T>(nuint size) where T : unmanaged
-        {
-            if (size != (nuint)sizeof(T))
-            {
-                throw new ArgumentException("The selected layout differs from the closed native value representation.");
-            }
+            pointer.RequireLayout(layout.Size, layout.Alignment);
+            return Location<T>.CreateNative(pointer, () => layout.Read(pointer), value => layout.Write(pointer, value));
         }
     }
 }

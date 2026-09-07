@@ -9,6 +9,46 @@ namespace Tsonic.CSharp.Runtime.Tests
     {
         private static int Width => IntPtr.Size * 8;
 
+        private struct Header
+        {
+            public byte Tag;
+            public uint Count;
+        }
+
+        private struct Envelope
+        {
+            public byte Prefix;
+            public Header Header;
+        }
+
+        [Fact]
+        public void NestedPackedRecordsReplaceValuesButRetainPhysicalAliases()
+        {
+            var layout = new NativeLayout<Envelope>(9, 1, Width, BitConverter.IsLittleEndian,
+                pointer => new Envelope { Prefix = pointer.ReadAt<byte>(0, 1),
+                    Header = new Header { Tag = pointer.ReadAt<byte>(1, 1), Count = pointer.ReadAt<uint>(5, 1) } },
+                (pointer, value) => {
+                    pointer.WriteAt(0, 1, value.Prefix);
+                    pointer.WriteAt(1, 1, value.Header.Tag);
+                    pointer.WriteAt(5, 1, value.Header.Count);
+                });
+            var original = NativeLocation.Allocate(new Envelope { Prefix = 1, Header = new Header { Tag = 2, Count = 7 } }, layout);
+            var saved = original.Load();
+            var raw = NativeLocation.ToRaw(original, layout)!;
+            var alias = NativeLocation.Reinterpret(raw, layout)!;
+            var word = NativeLocation.Reinterpret(RawPointer.Offset(raw, 5, Width),
+                NativeLayout.Scalar<uint>(4, 1, Width, BitConverter.IsLittleEndian))!;
+            word.Store(9);
+            Assert.Equal(9U, original.Load().Header.Count);
+            alias.Store(new Envelope { Prefix = 3, Header = new Header { Tag = 4, Count = 11 } });
+            Assert.Equal(11U, word.Load());
+            Assert.Equal(3, original.Load().Prefix);
+            Assert.Equal(7U, saved.Header.Count);
+            Assert.True(Location<Envelope>.Same(original, alias));
+            for (nuint offset = 2; offset < 5; offset++) Assert.Equal(0, raw.ReadAt<byte>(offset, 1));
+            Assert.Throws<IndexOutOfRangeException>(() => raw.ReadAt<uint>(6, 1));
+        }
+
         [Fact]
         public void NativeCollectionsUseAddressIdentityRatherThanWrapperIdentity()
         {
@@ -26,9 +66,9 @@ namespace Tsonic.CSharp.Runtime.Tests
         [Fact]
         public void NativeRoundTripMutatesTheOriginalAndRetainsItsOwner()
         {
-            var original = NativeLocation.Allocate(7U, 4, 4, Width, BitConverter.IsLittleEndian);
-            var raw = NativeLocation.ToRaw(original, 4, 4, Width, BitConverter.IsLittleEndian);
-            var restored = NativeLocation.Reinterpret<uint>(raw, 4, 4, Width, BitConverter.IsLittleEndian)!;
+            var original = NativeLocation.Allocate(7U, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian));
+            var raw = NativeLocation.ToRaw(original, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian));
+            var restored = NativeLocation.Reinterpret<uint>(raw, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian))!;
             Assert.True(Location<uint>.Same(original, restored));
             Assert.Equal(Location<uint>.Hash(original), Location<uint>.Hash(restored));
             restored.Store(11);
@@ -44,9 +84,9 @@ namespace Tsonic.CSharp.Runtime.Tests
         [Fact]
         public void ByteOffsetsAliasBytesRatherThanScalingByPointeeSize()
         {
-            var original = NativeLocation.Allocate(0U, 4, 4, Width, BitConverter.IsLittleEndian);
-            var raw = NativeLocation.ToRaw(original, 4, 4, Width, BitConverter.IsLittleEndian);
-            var bytePointer = NativeLocation.Reinterpret<byte>(RawPointer.Offset(raw, 1, Width), 1, 1, Width, BitConverter.IsLittleEndian)!;
+            var original = NativeLocation.Allocate(0U, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian));
+            var raw = NativeLocation.ToRaw(original, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian));
+            var bytePointer = NativeLocation.Reinterpret<byte>(RawPointer.Offset(raw, 1, Width), NativeLayout.Scalar<byte>(1, 1, Width, BitConverter.IsLittleEndian))!;
             bytePointer.Store(7);
             Assert.Equal(BitConverter.IsLittleEndian ? 7U << 8 : 7U << 16, original.Load());
             Assert.Equal(RawPointer.Address(raw, Width) + 1,
@@ -76,8 +116,8 @@ namespace Tsonic.CSharp.Runtime.Tests
         [Fact]
         public void MissingPointersAndZeroAddressesRemainMissing()
         {
-            Assert.Null(NativeLocation.ToRaw<uint>(null, 4, 4, Width, BitConverter.IsLittleEndian));
-            Assert.Null(NativeLocation.Reinterpret<uint>(null, 4, 4, Width, BitConverter.IsLittleEndian));
+            Assert.Null(NativeLocation.ToRaw<uint>(null, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian)));
+            Assert.Null(NativeLocation.Reinterpret<uint>(null, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian)));
             Assert.Null(RawPointer.FromAddress(0, Width));
             Assert.Null(RawPointer.Offset(null, 0, Width));
             Assert.True(RawPointer.Same(null, null));
@@ -88,14 +128,14 @@ namespace Tsonic.CSharp.Runtime.Tests
         [Fact]
         public void InvalidExtentsAndAccessorOnlyLocationsCannotAcquireBacking()
         {
-            var original = NativeLocation.Allocate(1U, 4, 4, Width, BitConverter.IsLittleEndian);
-            var raw = NativeLocation.ToRaw(original, 4, 4, Width, BitConverter.IsLittleEndian);
-            Assert.Throws<IndexOutOfRangeException>(() => NativeLocation.Reinterpret<uint>(RawPointer.Offset(raw, 4, Width), 4, 4, Width, BitConverter.IsLittleEndian));
-            Assert.Throws<ArgumentException>(() => NativeLocation.Reinterpret<uint>(RawPointer.Offset(raw, 1, Width), 4, 4, Width, BitConverter.IsLittleEndian));
-            Assert.Throws<ArgumentException>(() => NativeLocation.Reinterpret<ulong>(raw, 4, 4, Width, BitConverter.IsLittleEndian));
-            Assert.Throws<InvalidOperationException>(() => NativeLocation.ToRaw(Location<uint>.Allocate(1), 4, 4, Width, BitConverter.IsLittleEndian));
+            var original = NativeLocation.Allocate(1U, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian));
+            var raw = NativeLocation.ToRaw(original, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian));
+            Assert.Throws<IndexOutOfRangeException>(() => NativeLocation.Reinterpret<uint>(RawPointer.Offset(raw, 4, Width), NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian)));
+            Assert.Throws<ArgumentException>(() => NativeLocation.Reinterpret<uint>(RawPointer.Offset(raw, 1, Width), NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian)));
+            Assert.Throws<ArgumentException>(() => NativeLocation.Reinterpret<ulong>(raw, NativeLayout.Scalar<ulong>(4, 4, Width, BitConverter.IsLittleEndian)));
+            Assert.Throws<InvalidOperationException>(() => NativeLocation.ToRaw(Location<uint>.Allocate(1), NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian)));
             var shifted = Location<uint>.Project(original, value => value + 1, value => value - 1);
-            Assert.Throws<InvalidOperationException>(() => NativeLocation.ToRaw(shifted, 4, 4, Width, BitConverter.IsLittleEndian));
+            Assert.Throws<InvalidOperationException>(() => NativeLocation.ToRaw(shifted, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian)));
             Assert.Equal(2U, shifted.Load());
             Assert.Equal(1U, original.Load());
         }
@@ -105,20 +145,20 @@ namespace Tsonic.CSharp.Runtime.Tests
         {
             var otherWidth = Width == 64 ? 32 : 64;
             var little = BitConverter.IsLittleEndian;
-            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.Allocate(1U, 4, 4, otherWidth, little));
-            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.Allocate(1U, 4, 4, Width, !little));
-            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.ToRaw<uint>(null, 4, 4, otherWidth, little));
-            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.ToRaw<uint>(null, 4, 4, Width, !little));
-            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.Reinterpret<uint>(null, 4, 4, otherWidth, little));
-            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.Reinterpret<uint>(null, 4, 4, Width, !little));
+            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.Allocate(1U, NativeLayout.Scalar<uint>(4, 4, otherWidth, little)));
+            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.Allocate(1U, NativeLayout.Scalar<uint>(4, 4, Width, !little)));
+            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.ToRaw<uint>(null, NativeLayout.Scalar<uint>(4, 4, otherWidth, little)));
+            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.ToRaw<uint>(null, NativeLayout.Scalar<uint>(4, 4, Width, !little)));
+            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.Reinterpret<uint>(null, NativeLayout.Scalar<uint>(4, 4, otherWidth, little)));
+            Assert.Throws<PlatformNotSupportedException>(() => NativeLocation.Reinterpret<uint>(null, NativeLayout.Scalar<uint>(4, 4, Width, !little)));
         }
 
         [Fact]
         public void NativeValuePropertyAndUnalignedViewsShareTheSameBytes()
         {
-            var original = NativeLocation.Allocate(0UL, 8, 1, Width, BitConverter.IsLittleEndian);
-            var raw = NativeLocation.ToRaw(original, 8, 1, Width, BitConverter.IsLittleEndian);
-            var alias = NativeLocation.Reinterpret<uint>(RawPointer.Offset(raw, 1, Width), 4, 1, Width, BitConverter.IsLittleEndian)!;
+            var original = NativeLocation.Allocate(0UL, NativeLayout.Scalar<ulong>(8, 1, Width, BitConverter.IsLittleEndian));
+            var raw = NativeLocation.ToRaw(original, NativeLayout.Scalar<ulong>(8, 1, Width, BitConverter.IsLittleEndian));
+            var alias = NativeLocation.Reinterpret<uint>(RawPointer.Offset(raw, 1, Width), NativeLayout.Scalar<uint>(4, 1, Width, BitConverter.IsLittleEndian))!;
             alias.Value = 0x01020304U;
             Assert.Equal(0x01020304U, alias.Load());
             var bytes = BitConverter.GetBytes(original.Value);

@@ -10,6 +10,68 @@ namespace Tsonic.CSharp.Runtime.Tests
     {
         private static int Width => IntPtr.Size * 8;
 
+        private struct Descriptor
+        {
+            internal ulong Address;
+            internal ulong Length;
+            internal ulong Capacity;
+        }
+
+        [Fact]
+        public void PhysicalDescriptorViewsRetainTheCompositeLeaseNotJustAddressBits()
+        {
+            var released = new ReleaseCount();
+            ExerciseDescriptorLease(released);
+            Collect();
+            Assert.Equal(1, released.Value);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void ExerciseDescriptorLease(ReleaseCount released)
+        {
+            var retained = CreateRetainedDescriptorView(released);
+            Collect();
+            Assert.Equal(0, released.Value);
+            Assert.Equal(19U, retained.Load());
+            retained.Store(23);
+            Assert.Equal(23U, retained.Load());
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Location<uint> CreateRetainedDescriptorView(ReleaseCount released)
+        {
+            var data = CreateRegion(released);
+            data.WriteAt(0, 4, 7U);
+            data.WriteAt(4, 4, 11U);
+            var layout = new NativeLayout<Descriptor>(24, 8, Width, BitConverter.IsLittleEndian,
+                raw => new Descriptor { Address = raw.ReadAt<ulong>(0, 8), Length = raw.ReadAt<ulong>(8, 8), Capacity = raw.ReadAt<ulong>(16, 8) },
+                (raw, value) => { raw.WriteAt(0, 8, value.Address); raw.WriteAt(8, 8, value.Length); raw.WriteAt(16, 8, value.Capacity); });
+            var descriptor = NativeLocation.Allocate(new Descriptor { Address = RawPointer.Address(data, Width), Length = 2, Capacity = 2 }, layout);
+            var descriptorRaw = NativeLocation.ToRaw(descriptor, layout)!;
+            var leased = RawPointer.FromExternal((void*)checked((nuint)RawPointer.Address(descriptorRaw, Width)), 24,
+                (Descriptor: descriptorRaw, Data: data))!;
+            var first = DescriptorView(leased);
+            var second = DescriptorView(leased);
+            var word = NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian);
+            var alias = NativeLocation.Reinterpret(first, word)!;
+            alias.Store(19);
+            Assert.Equal(19U, data.ReadAt<uint>(0, 4));
+            Assert.Equal(19U, second.ReadAt<uint>(0, 4));
+            descriptor.Store(new Descriptor { Address = checked(RawPointer.Address(data, Width) + 4), Length = 1, Capacity = 1 });
+            Assert.Equal(11U, DescriptorView(leased).ReadAt<uint>(0, 4));
+            Assert.Equal(19U, alias.Load());
+            return alias;
+        }
+
+        private static RawPointer DescriptorView(RawPointer descriptor)
+        {
+            var address = descriptor.ReadAt<ulong>(0, 8);
+            var length = descriptor.ReadAt<ulong>(8, 8);
+            var capacity = descriptor.ReadAt<ulong>(16, 8);
+            if (length > capacity) throw new ArgumentException("Descriptor extent exceeds its capacity.");
+            return RawPointer.FromExternal((void*)checked((nuint)address), checked((nuint)length * 4), descriptor)!;
+        }
+
         [Fact]
         public void TypedAndOffsetAliasesRetainTheProviderLeaseUntilTheirLastUse()
         {
@@ -24,8 +86,8 @@ namespace Tsonic.CSharp.Runtime.Tests
         {
             var original = CreateRegion(released);
             var raw = RawPointer.Offset(original, 4, Width)!;
-            var typed = NativeLocation.Reinterpret<uint>(raw, 4, 4, Width, BitConverter.IsLittleEndian)!;
-            var duplicate = NativeLocation.Reinterpret<uint>(raw, 4, 4, Width, BitConverter.IsLittleEndian)!;
+            var typed = NativeLocation.Reinterpret<uint>(raw, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian))!;
+            var duplicate = NativeLocation.Reinterpret<uint>(raw, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian))!;
             original = null!;
             raw = null!;
             Collect();
@@ -58,9 +120,9 @@ namespace Tsonic.CSharp.Runtime.Tests
             var raw = CreateRegion(new ReleaseCount());
             var after = RawPointer.Offset(raw, 8, Width);
             var before = RawPointer.Offset(raw, -1, Width);
-            Assert.Throws<IndexOutOfRangeException>(() => NativeLocation.Reinterpret<uint>(after, 4, 4, Width, BitConverter.IsLittleEndian));
-            Assert.Throws<IndexOutOfRangeException>(() => NativeLocation.Reinterpret<byte>(before, 1, 1, Width, BitConverter.IsLittleEndian));
-            Assert.Throws<ArgumentException>(() => NativeLocation.Reinterpret<uint>(RawPointer.Offset(raw, 1, Width), 4, 4, Width, BitConverter.IsLittleEndian));
+            Assert.Throws<IndexOutOfRangeException>(() => NativeLocation.Reinterpret<uint>(after, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian)));
+            Assert.Throws<IndexOutOfRangeException>(() => NativeLocation.Reinterpret<byte>(before, NativeLayout.Scalar<byte>(1, 1, Width, BitConverter.IsLittleEndian)));
+            Assert.Throws<ArgumentException>(() => NativeLocation.Reinterpret<uint>(RawPointer.Offset(raw, 1, Width), NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian)));
             Assert.Throws<ArgumentException>(() => RawPointer.FromExternal(null, 1, new object()));
             Assert.Throws<ArgumentOutOfRangeException>(() => RawPointer.FromExternal((void*)nuint.MaxValue, 1, new object()));
             Assert.Throws<ArgumentNullException>(() => RawPointer.FromExternal(null, 0, null!));
@@ -75,8 +137,8 @@ namespace Tsonic.CSharp.Runtime.Tests
             var descriptors = new[] { (Address: first, Length: 2) };
             var copied = descriptors[0];
             descriptors[0] = (second, 1);
-            var oldView = NativeLocation.Reinterpret<uint>(copied.Address, 4, 4, Width, BitConverter.IsLittleEndian)!;
-            var newView = NativeLocation.Reinterpret<uint>(descriptors[0].Address, 4, 4, Width, BitConverter.IsLittleEndian)!;
+            var oldView = NativeLocation.Reinterpret<uint>(copied.Address, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian))!;
+            var newView = NativeLocation.Reinterpret<uint>(descriptors[0].Address, NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian))!;
             oldView.Store(37);
             Assert.Equal(0U, newView.Load());
             newView.Store(41);
@@ -90,7 +152,7 @@ namespace Tsonic.CSharp.Runtime.Tests
         {
             var values = new uint[] { 3, 5 };
             var raw = Pin(values);
-            var second = NativeLocation.Reinterpret<uint>(RawPointer.Offset(raw, 4, Width), 4, 4, Width, BitConverter.IsLittleEndian)!;
+            var second = NativeLocation.Reinterpret<uint>(RawPointer.Offset(raw, 4, Width), NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian))!;
             GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
             second.Store(17);
             Assert.Equal(17U, values[1]);
