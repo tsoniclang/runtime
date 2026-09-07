@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Tsonic.CSharp.Runtime
 {
@@ -7,6 +8,18 @@ namespace Tsonic.CSharp.Runtime
         internal abstract LocationIdentity? Parent { get; }
 
         internal abstract bool SegmentEquals(LocationIdentity other);
+
+        internal abstract int SegmentHash();
+
+        internal uint Hash()
+        {
+            uint hash = 2166136261;
+            for (LocationIdentity? current = this; current is not null; current = current.Parent)
+            {
+                hash = unchecked((hash ^ (uint)current.SegmentHash()) * 16777619);
+            }
+            return hash;
+        }
 
         internal bool Same(LocationIdentity other)
         {
@@ -40,6 +53,19 @@ namespace Tsonic.CSharp.Runtime
         internal override bool SegmentEquals(LocationIdentity other) =>
             other is ReferenceLocationIdentity reference &&
             ReferenceEquals(_storage, reference._storage);
+
+        internal override int SegmentHash() => RuntimeHelpers.GetHashCode(_storage);
+    }
+
+    internal sealed class NativeLocationIdentity : LocationIdentity
+    {
+        private readonly RawPointer _pointer;
+
+        internal NativeLocationIdentity(RawPointer pointer) => _pointer = pointer;
+        internal override LocationIdentity? Parent => null;
+        internal override bool SegmentEquals(LocationIdentity other) =>
+            other is NativeLocationIdentity native && RawPointer.Same(_pointer, native._pointer);
+        internal override int SegmentHash() => unchecked((int)(uint)RawPointer.Hash(_pointer));
     }
 
     internal sealed class StaticLocationIdentity : LocationIdentity
@@ -57,6 +83,8 @@ namespace Tsonic.CSharp.Runtime
         internal override bool SegmentEquals(LocationIdentity other) =>
             other is StaticLocationIdentity identity &&
             StringComparer.Ordinal.Equals(_storage, identity._storage);
+
+        internal override int SegmentHash() => StringComparer.Ordinal.GetHashCode(_storage);
     }
 
     internal sealed class MemberLocationIdentity : LocationIdentity
@@ -76,6 +104,8 @@ namespace Tsonic.CSharp.Runtime
         internal override bool SegmentEquals(LocationIdentity other) =>
             other is MemberLocationIdentity identity &&
             StringComparer.Ordinal.Equals(_member, identity._member);
+
+        internal override int SegmentHash() => StringComparer.Ordinal.GetHashCode(_member);
     }
 
     internal sealed class ArrayElementLocationIdentity : LocationIdentity
@@ -96,10 +126,13 @@ namespace Tsonic.CSharp.Runtime
         internal override bool SegmentEquals(LocationIdentity other) =>
             other is ArrayElementLocationIdentity identity &&
             _index == identity._index;
+
+        internal override int SegmentHash() => _index.GetHashCode();
     }
 
     public sealed class Location<T>
     {
+        internal RawPointer? RawBacking { get; private init; }
         private readonly LocationIdentity _identity;
         private readonly Func<T> _load;
         private readonly Action<T> _store;
@@ -119,7 +152,36 @@ namespace Tsonic.CSharp.Runtime
 
         public T Load() => _load();
 
+        public T Value { get => _load(); set => _store(value); }
+
+        internal static Location<T> CreateNative(RawPointer pointer, Func<T> read, Action<T> write) =>
+            new Location<T>(new NativeLocationIdentity(pointer), read, write) { RawBacking = pointer };
+
         public void Store(T value) => _store(value);
+
+        public static double Hash(Location<T>? pointer) => pointer?._identity.Hash() ?? 0;
+
+        public static Location<T> Bind(object identity, Func<T> read, Action<T> write) =>
+            new Location<T>(new ReferenceLocationIdentity(identity), read, write);
+
+        public static Location<T> Project<TSource>(
+            Location<TSource> source,
+            Func<TSource, T> read,
+            Func<T, TSource> write)
+        {
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(read);
+            ArgumentNullException.ThrowIfNull(write);
+            return new Location<T>(source._identity,
+                () => read(source.Load()),
+                value => source.Store(write(value)));
+        }
+
+        public static Location<T>? ProjectOptional<TSource>(
+            Location<TSource>? source,
+            Func<TSource, T> read,
+            Func<T, TSource> write) =>
+            source is null ? null : Project(source, read, write);
 
         public static bool Same(Location<T>? left, Location<T>? right)
         {
