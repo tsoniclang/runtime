@@ -8,6 +8,33 @@ namespace Tsonic.CSharp.Runtime.Tests
     public sealed class RawPointerTests
     {
         private static int Width => IntPtr.Size * 8;
+        [Fact]
+        public void NativeArrayElementsShareOneStridedAllocationAndRetainTheirOwner()
+        {
+            var layout = NativeLayout.Scalar<uint>(4, 4, Width, BitConverter.IsLittleEndian);
+            var values = new NativeArray<uint>(new uint[] { 7, 8 }, layout, 8);
+            var alias = values;
+            var first = values.LocationAt(0);
+            var raw = NativeLocation.ToRaw(first, layout)!;
+            Assert.Equal(RawPointer.Address(raw, Width) + 8,
+                RawPointer.Address(NativeLocation.ToRaw(values.LocationAt(1), layout), Width));
+            first.Store(9);
+            Assert.Equal(9U, alias[0]);
+            alias[0] = 11;
+            Assert.Equal(11U, first.Load());
+            Assert.True(Location<uint>.Same(first, alias.LocationAt(0)));
+            values = new NativeArray<uint>(new uint[] { 99 }, layout, 8);
+            Assert.Equal(11U, first.Load());
+            Assert.Equal(99U, values[0]);
+            Assert.Throws<IndexOutOfRangeException>(() => alias.LocationAt(-1));
+            Assert.Throws<IndexOutOfRangeException>(() => alias.LocationAt(2));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new NativeArray<uint>(new uint[] { 1 }, layout, 2));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new NativeArray<uint>(new uint[] { 1 }, layout, 6));
+            alias = null!;
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
+            first.Store(17);
+            Assert.Equal(17U, first.Load());
+        }
 
         private struct Header
         {
